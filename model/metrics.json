@@ -1,0 +1,230 @@
+{
+  "trained_at": "2026-10-17T04:03:00",
+  "dataset": {
+    "file": "thai_scam_sms_dataset.csv",
+    "n_raw": 700,
+    "n_unique": 399,
+    "n_duplicates": 301,
+    "n_scam": 236,
+    "n_ham": 163,
+    "n_train": 319,
+    "n_test": 80
+  },
+  "features": "TF-IDF character n-gram (char_wb, 2-4)",
+  "deployed": "Logistic Regression",
+  "models": [
+    {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0,
+      "confusion": [
+        [
+          33,
+          0
+        ],
+        [
+          0,
+          47
+        ]
+      ],
+      "name": "Multinomial Naive Bayes",
+      "cv_f1_mean": 0.9896025778732547,
+      "cv_f1_std": 0.006455558314412192
+    },
+    {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0,
+      "confusion": [
+        [
+          33,
+          0
+        ],
+        [
+          0,
+          47
+        ]
+      ],
+      "name": "Logistic Regression",
+      "cv_f1_mean": 0.9917078410311493,
+      "cv_f1_std": 0.0076720306860619605
+    },
+    {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0,
+      "confusion": [
+        [
+          33,
+          0
+        ],
+        [
+          0,
+          47
+        ]
+      ],
+      "name": "Support Vector Machine (LinearSVC)",
+      "cv_f1_mean": 0.9917078410311493,
+      "cv_f1_std": 0.0076720306860619605
+    },
+    {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0,
+      "confusion": [
+        [
+          33,
+          0
+        ],
+        [
+          0,
+          47
+        ]
+      ],
+      "name": "Random Forest Classifier",
+      "cv_f1_mean": 0.9813556073541733,
+      "cv_f1_std": 0.007623537881554754
+    }
+  ],
+  "top_terms": {
+    "scam": [
+      "000",
+      "ได้",
+      "ท่าน",
+      ".co",
+      "th.",
+      "มัคร",
+      "สมัค",
+      "ถูก",
+      "ือน:",
+      "/cla",
+      "clai",
+      "aim",
+      "-th",
+      "ไม่",
+      "ไลน"
+    ],
+    "ham": [
+      "การ",
+      "วัน",
+      "รหั",
+      "หัส",
+      "10/",
+      "256",
+      "/25",
+      "/10",
+      "0/2",
+      "569",
+      "แล้ว",
+      "ขอบ",
+      "อบค",
+      ".00",
+      "นแอป"
+    ]
+  },
+  "external": {
+    "file": "external_check.csv",
+    "n": 15,
+    "n_correct": 11,
+    "items": [
+      {
+        "id": "instagram",
+        "label": 0,
+        "scam_probability": 0.672,
+        "correct": false
+      },
+      {
+        "id": "trueid",
+        "label": 0,
+        "scam_probability": 0.64,
+        "correct": false
+      },
+      {
+        "id": "telegram",
+        "label": 0,
+        "scam_probability": 0.831,
+        "correct": false
+      },
+      {
+        "id": "heng",
+        "label": 1,
+        "scam_probability": 0.857,
+        "correct": true
+      },
+      {
+        "id": "truenet",
+        "label": 0,
+        "scam_probability": 0.41,
+        "correct": true
+      },
+      {
+        "id": "slot",
+        "label": 1,
+        "scam_probability": 0.879,
+        "correct": true
+      },
+      {
+        "id": "parcel",
+        "label": 1,
+        "scam_probability": 0.888,
+        "correct": true
+      },
+      {
+        "id": "loan",
+        "label": 1,
+        "scam_probability": 0.976,
+        "correct": true
+      },
+      {
+        "id": "electric",
+        "label": 1,
+        "scam_probability": 0.923,
+        "correct": true
+      },
+      {
+        "id": "bank",
+        "label": 1,
+        "scam_probability": 0.975,
+        "correct": true
+      },
+      {
+        "id": "job",
+        "label": 1,
+        "scam_probability": 0.97,
+        "correct": true
+      },
+      {
+        "id": "otp",
+        "label": 0,
+        "scam_probability": 0.036,
+        "correct": true
+      },
+      {
+        "id": "salary",
+        "label": 0,
+        "scam_probability": 0.119,
+        "correct": true
+      },
+      {
+        "id": "doctor",
+        "label": 0,
+        "scam_probability": 0.068,
+        "correct": true
+      },
+      {
+        "id": "chat",
+        "label": 0,
+        "scam_probability": 0.679,
+        "correct": false
+      }
+    ]
+  }
+}

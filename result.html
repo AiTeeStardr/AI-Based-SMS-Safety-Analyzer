@@ -27,6 +27,26 @@
       root.innerHTML = `<div class="card empty">${ic('search')}<h1 style="font-size:1.3rem">ยังไม่มีผลการวิเคราะห์</h1><p style="color:var(--muted)">วางข้อความหรืออัปโหลดภาพหน้าจอ แล้วผลจะแสดงที่นี่</p><a class="btn btn-primary" href="check.html">ไปตรวจสอบ SMS</a></div>`;
     } else render(rec);
 
+    // การ์ดผลจากโมเดล ML ที่รันบน Python backend (ไม่มี = เปิดแบบไม่มีเซิร์ฟเวอร์ เช่น GitHub Pages)
+    function mlCard(r) {
+      if (!r.ml) {
+        return `<section class="card" aria-labelledby="hMl"><h2 id="hMl">${ic('cpu')}โมเดล ML (Python)</h2>
+          <p class="hint" style="margin:0">ผลนี้ไม่มีข้อมูลจากโมเดล ML เพราะไม่ได้เชื่อมต่อเซิร์ฟเวอร์ Python ระบบใช้เฉพาะระบบกฎ รัน <code>python server.py</code> เพื่อเปิดโมเดล</p></section>`;
+      }
+      const p = Math.round(r.ml.scam_probability * 100), mlScam = r.ml.scam_probability >= .5, rulesScam = r.percent >= 30;
+      const note = mlScam === rulesScam
+        ? 'ผลของโมเดลสอดคล้องกับระบบกฎ'
+        : 'ผลของโมเดลต่างจากระบบกฎ โมเดลนี้ฝึกจากข้อมูลจำนวนน้อย จึงให้ระบบกฎที่อธิบายเหตุผลได้เป็นผลหลัก ใช้โมเดลเป็นความเห็นที่สอง';
+      const terms = (r.ml.top_terms || []).length ? `<details style="margin-top:.6rem"><summary class="hint" style="cursor:pointer">รายละเอียดทางเทคนิค: n-gram ที่ส่งผลมากที่สุด</summary><div class="kw" style="margin-top:.4rem">${r.ml.top_terms.map(t => `<span>${esc(t)}</span>`).join('')}</div></details>` : '';
+      return `<section class="card" aria-labelledby="hMl">
+        <h2 id="hMl">${ic('cpu')}ความเห็นของโมเดล ML <span class="badge ${mlScam ? 'bad' : 'ok'}">${mlScam ? 'ทำนายว่าเป็นมิจฉาชีพ' : 'ทำนายว่าเป็นข้อความปกติ'}</span></h2>
+        <div class="wf-row" style="grid-template-columns:7.5rem 1fr 2.8rem"><div class="wf-label">โอกาสเป็นมิจฉาชีพ</div>
+          <div class="wf-track"><div class="wf-bar ${mlScam ? 'up' : 'down'}" style="left:0;width:${p}%"></div></div><div class="wf-val">${p}%</div></div>
+        <p class="hint">${note}</p>${terms}
+        <p class="hint">โมเดล: TF-IDF character n-gram + Logistic Regression (Python / scikit-learn) ทำงานที่ server.py</p>
+      </section>`;
+    }
+
     function render(r) {
       const L = r.level;
       const head = {
@@ -76,7 +96,7 @@
                   <div><dt>แอป/หน่วยงานที่อ้างถึง</dt><dd>${esc(c.appName || 'ไม่ระบุ')}${c.appCategory ? `<small>หมวดหมู่: ${esc(c.appCategory)}</small>` : ''}</dd></div>
                   <div><dt>ส่งมาเพื่ออะไร</dt><dd>${esc(c.intent || 'ไม่ระบุ')}</dd></div>
                   <div><dt>ลิงก์ตรงกับแอปจริงไหม</dt><dd>${esc(lk.text || 'ไม่พบลิงก์ในข้อความ')}</dd></div>
-                  <div><dt>วิธีวิเคราะห์</dt><dd>ระบบกฎ (Rule-based) + รายชื่อโดเมนทางการ</dd></div>
+                  <div><dt>วิธีวิเคราะห์</dt><dd>${r.ml ? 'ระบบกฎ + โมเดล ML (Python backend)' : 'ระบบกฎ (Rule-based) + รายชื่อโดเมนทางการ'}</dd></div>
                 </dl>
               </section>
 
@@ -94,6 +114,8 @@
                 <div class="wf-axis" aria-hidden="true"><span></span><div><span style="left:0">0</span><span style="left:30%">30</span><span style="left:60%">60</span><span style="left:100%">100</span></div><span></span></div>
                 <p class="hint">แท่งแดงเพิ่มความเสี่ยง แท่งเขียวลดความเสี่ยง แท่งลายขาวคือการปรับตามบริบทหรือลิงก์ เส้นที่ 30 คือเริ่มเฝ้าระวัง เส้นที่ 60 คือเริ่มอันตราย</p>
               </section>
+
+              ${mlCard(r)}
 
               <section class="card" aria-labelledby="hR">
                 <h2 id="hR">${ic('info')}เหตุผลที่ตัดสินแบบนี้</h2>

@@ -80,10 +80,12 @@
       const text = msg.value.trim();
       if (!text) { msg.focus(); SG.toast('กรุณาวางข้อความก่อน'); return; }
       const btn = $('go'); btn.disabled = true; btn.textContent = 'กำลังวิเคราะห์...';
-      setTimeout(() => {
-        const rec = SG.history.add(SG.analyze(text), 'text');
+      const result = SG.analyze(text);               // ระบบกฎ (ทำงานในเบราว์เซอร์)
+      SG.api.analyze(text).then(ml => {              // โมเดล ML (Python backend) ถ้าเซิร์ฟเวอร์พร้อม
+        if (ml) result.ml = ml;
+        const rec = SG.history.add(result, 'text');
         location.href = 'result.html?id=' + encodeURIComponent(rec.id);
-      }, 250);
+      });
     };
   </script>
 </body>

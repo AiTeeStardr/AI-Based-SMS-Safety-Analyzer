@@ -68,6 +68,18 @@
     get(id) { return read().find(r => r.id === id) || null; },
     clear() { write([]); }
   };
+  /* ---------- Python backend (server.py) — ถ้าติดต่อไม่ได้คืน null แล้วเว็บใช้เฉพาะระบบกฎ ---------- */
+  SG.api = {
+    async analyze(text) {
+      const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 3000);
+      try {
+        const res = await fetch('api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }), signal: ctl.signal });
+        if (!res.ok) return null;
+        const j = await res.json();
+        return typeof j.scam_probability === 'number' ? j : null;
+      } catch (e) { return null; } finally { clearTimeout(timer); }
+    }
+  };
   SG.pref = {
     get(k) { try { return localStorage.getItem('smsguard.' + k); } catch (e) { return null; } },
     set(k, v) { try { localStorage.setItem('smsguard.' + k, v); } catch (e) {} }
