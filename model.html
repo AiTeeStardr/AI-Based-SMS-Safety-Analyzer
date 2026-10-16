@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0B0B0E">
+  <title>ข้อมูลโมเดล AI — SMS Guard AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <main>
+    <div class="wrap">
+      <div class="page-head">
+        <span class="tile"><svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 9h6v6H9zM9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></svg></span>
+        <div><h1>ข้อมูลโมเดล AI</h1><p>ผลทดสอบโมเดล NLP (TF-IDF N-grams) จากสคริปต์ Python ของโครงงาน</p></div>
+      </div>
+
+      <div class="kpis" id="kpis" aria-label="ผลทดสอบของโมเดลที่ดีที่สุด"></div>
+      <p class="hint" id="kpiNote" style="margin-top:.6rem"></p>
+
+      <div class="model-grid">
+        <section class="card" aria-labelledby="hC">
+          <h2 id="hC"><svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 20V11M11 20V4M17 20v-6M3 20h18"/></svg>เปรียบเทียบโมเดล</h2>
+          <div class="scroll-x"><table class="models" id="tbl"><thead></thead><tbody></tbody></table></div>
+        </section>
+        <section class="card" aria-labelledby="hD">
+          <h2 id="hD"><svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 6"/></svg>ชุดข้อมูลที่ใช้</h2>
+          <div class="donut-wrap">
+            <div class="donut" id="donut"><div><span><b id="dTotal">–</b><small>ข้อความทั้งหมด</small></span></div></div>
+            <div class="donut-legend" id="legend"></div>
+          </div>
+        </section>
+      </div>
+
+      <section class="card section-gap" aria-labelledby="hN">
+        <h2 id="hN"><svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.5"/></svg>หมายเหตุการอ่านผล</h2>
+        <div class="notes" id="notes"></div>
+        <details class="gallery">
+          <summary>ภาพจากขั้นตอนฝึกโมเดล (ภาพนิ่งที่สร้างไว้ล่วงหน้า ไม่เปลี่ยนตามข้อความที่ตรวจ)</summary>
+          <div class="imgs">
+            <figure style="margin:0"><img src="charts/top_scam_keywords.png" alt="คำที่บ่งชี้มิจฉาชีพสูงสุดจากชุดข้อมูลฝึก" loading="lazy"><figcaption class="hint">คำที่บ่งชี้มิจฉาชีพสูงสุด</figcaption></figure>
+            <figure style="margin:0"><img src="charts/scam_confusion_matrices.png" alt="Confusion matrix ของแต่ละโมเดล" loading="lazy"><figcaption class="hint">Confusion matrix</figcaption></figure>
+          </div>
+        </details>
+      </section>
+    </div>
+  </main>
+
+  <script src="js/shared.js"></script>
+  <script>
+    SG.mount('model');
+    const $ = id => document.getElementById(id), esc = SG.escapeHtml, ic = SG.icon;
+
+    // ค่าสำรองกรณีเปิดไฟล์ตรงๆ (file://) จนอ่าน CSV ไม่ได้ — ตรงกับไฟล์ ณ วันที่เขียนหน้านี้
+    const FALLBACK = {
+      models: [['Multinomial Naive Bayes', 1, 1, 1, 1, 1, 1], ['Logistic Regression', 1, 1, 1, 1, 1, 1], ['Support Vector Machine (LinearSVC)', 1, 1, 1, 1, 1, 1], ['Random Forest Classifier', 1, 1, 1, 1, 1, 1]],
+      total: 700, scam: 350, ham: 350, unique: 399
+    };
+
+    // CSV parser รองรับเครื่องหมายคำพูดและ BOM
+    function parseCSV(t) {
+      t = t.replace(/^﻿/, '');
+      const rows = []; let row = [], f = '', q = false;
+      for (let i = 0; i < t.length; i++) {
+        const c = t[i];
+        if (q) { if (c === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+        else if (c === '"') q = true;
+        else if (c === ',') { row.push(f); f = ''; }
+        else if (c === '\n' || c === '\r') { if (c === '\r' && t[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+        else f += c;
+      }
+      if (f || row.length) { row.push(f); rows.push(row); }
+      return rows.filter(r => r.length > 1 || r[0] !== '');
+    }
+    const num = s => parseFloat(String(s).replace('%', '')) / (String(s).includes('%') ? 100 : 1);
+    const pct = v => (v * 100).toFixed(1) + '%';
+
+    async function load() {
+      const d = JSON.parse(JSON.stringify(FALLBACK)); let live = true;
+      try {
+        const ev = parseCSV(await (await fetch('scam_model_evaluation.csv')).text()).slice(1);
+        if (ev.length) d.models = ev.map(r => [r[0], ...r.slice(1, 7).map(num)]);
+      } catch (e) { live = false; }
+      try {
+        const ds = parseCSV(await (await fetch('thai_scam_sms_dataset.csv')).text());
+        const h = ds[0], ti = h.indexOf('text'), li = h.indexOf('label'), body = ds.slice(1);
+        d.total = body.length; d.scam = body.filter(r => r[li] === '1').length; d.ham = body.filter(r => r[li] === '0').length;
+        d.unique = new Set(body.map(r => r[ti].trim())).size;
+      } catch (e) { live = false; }
+      return { d, live };
+    }
+
+    load().then(({ d, live }) => {
+      const best = d.models.slice().sort((a, b) => b[1] - a[1] || b[4] - a[4])[0];
+      const k = [
+        ['Accuracy', best[1], 'shield-check', 'f-mint', 'ความถูกต้องรวม'],
+        ['Precision', best[2], 'check', 'f-blue', 'ที่ทายว่ามิจฉาชีพ ถูกกี่ส่วน'],
+        ['Recall', best[3], 'search', 'f-sky', 'มิจฉาชีพจริง จับได้กี่ส่วน'],
+        ['F1-score', best[4], 'chart', 'f-rose', 'สมดุล Precision/Recall']
+      ];
+      $('kpis').innerHTML = k.map(x => `<div class="kpi ${x[3]}"><div class="top">${ic(x[2])}${x[0]}</div><b>${pct(x[1])}</b><small>${x[4]}</small></div>`).join('');
+      $('kpiNote').textContent = 'โมเดลที่ดีที่สุดในตาราง: ' + best[0] + (live ? '' : ' · (ใช้ค่าสำรอง เปิดผ่านเว็บเซิร์ฟเวอร์เพื่ออ่านไฟล์ผลล่าสุด)');
+
+      $('tbl').querySelector('thead').innerHTML = '<tr><th>โมเดล</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1-score</th><th>ROC-AUC</th><th>5-fold CV</th></tr>';
+      $('tbl').querySelector('tbody').innerHTML = d.models.map(m => `<tr><td>${esc(m[0])}</td><td>${pct(m[1])}</td><td>${pct(m[2])}</td><td>${pct(m[3])}</td><td>${pct(m[4])}</td><td>${m[5].toFixed(4)}</td><td>${pct(m[6])}</td></tr>`).join('');
+
+      $('dTotal').textContent = d.total.toLocaleString('th-TH');
+      $('donut').style.setProperty('--a', (d.scam / d.total * 100) + '%');
+      $('legend').innerHTML = `<div><i style="background:var(--brand)"></i>ข้อความมิจฉาชีพ ${d.scam} (${(d.scam / d.total * 100).toFixed(0)}%)</div><div><i style="background:#9C9CAC"></i>ข้อความปกติ ${d.ham} (${(d.ham / d.total * 100).toFixed(0)}%)</div>`;
+
+      const dup = d.total - d.unique;
+      const allPerfect = d.models.every(m => m[1] >= 0.9999);
+      let notes = '';
+      if (dup > 0 || allPerfect) {
+        notes += `<div class="note">${ic('alert')}<div><b>ผลนี้อาจสูงเกินจริง</b>${allPerfect ? ' โมเดลทุกตัวได้ 100% ทุกตัวชี้วัด' : ''}${dup > 0 ? ` และชุดข้อมูลมีข้อความไม่ซ้ำกันเพียง ${d.unique.toLocaleString('th-TH')} จาก ${d.total.toLocaleString('th-TH')} รายการ (ซ้ำ ${dup.toLocaleString('th-TH')} รายการ) ข้อความซ้ำที่ตกไปอยู่ทั้งชุดฝึกและชุดทดสอบทำให้โมเดลดูแม่นกว่าความเป็นจริง` : ''} ควรทดสอบซ้ำกับ SMS จริงที่โมเดลไม่เคยเห็นก่อนอ้างผลในรายงาน</div></div>`;
+      }
+      notes += `<div class="note info">${ic('info')}<div><b>หน้าเว็บนี้ตัดสินด้วยระบบกฎ</b> การตรวจข้อความในหน้า "ตรวจสอบ SMS" ใช้กฎและรายชื่อโดเมนทางการที่อธิบายเหตุผลได้ ไม่ได้เรียกใช้โมเดลในตารางนี้ ตารางนี้เป็นผลทดสอบแบบออฟไลน์จากสคริปต์ Python</div></div>`;
+      $('notes').innerHTML = notes;
+    });
+  </script>
+</body>
+</html>

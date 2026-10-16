@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0B0B0E">
+  <title>SMS Guard AI — เช็กก่อนคลิก ปลอดภัยกว่า</title>
+  <meta name="description" content="ระบบวิเคราะห์ความปลอดภัยของ SMS ด้วยปัญญาประดิษฐ์ วางข้อความ แล้วดูว่าอันตรายเพราะอะไร">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <main>
+    <div class="wrap">
+      <section class="hero" aria-labelledby="t">
+        <div>
+          <h1 id="t">เช็กก่อนคลิก ปลอดภัยกว่า</h1>
+          <h2>ระบบวิเคราะห์ความปลอดภัยของ SMS ด้วยปัญญาประดิษฐ์</h2>
+          <p class="lead">ป้องกันคุณจาก SMS เว็บพนันและข้อความอันตราย ด้วยเทคโนโลยี NLP และ Machine Learning วางข้อความที่ได้รับ ระบบจะชี้ให้เห็นว่าคำไหนและลิงก์ไหนน่าสงสัย</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="check.html" id="startBtn">เริ่มตรวจสอบ SMS <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            <a class="btn" href="#features">ดูข้อมูลเพิ่มเติม</a>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <svg viewBox="0 0 360 380" fill="none">
+            <circle cx="190" cy="190" r="150" fill="#2A0F14"/>
+            <circle cx="300" cy="80" r="26" fill="#3A151B"/><circle cx="52" cy="300" r="18" fill="#3A151B"/>
+            <rect x="110" y="40" width="170" height="320" rx="26" fill="#17171D" stroke="#4C4C5C" stroke-width="3"/>
+            <rect x="124" y="64" width="142" height="272" rx="14" fill="#0F0F14"/>
+            <rect x="170" y="48" width="50" height="6" rx="3" fill="#4C4C5C"/>
+            <g>
+              <rect x="30" y="96" width="132" height="54" rx="14" fill="#17171D" stroke="#4C4C5C" stroke-width="2"/>
+              <circle cx="56" cy="123" r="11" fill="#3A1217"/><path d="M52 123h8M56 119v8" stroke="#E5384F" stroke-width="2" stroke-linecap="round"/>
+              <rect x="76" y="114" width="64" height="6" rx="3" fill="#4C4C5C"/><rect x="76" y="128" width="44" height="6" rx="3" fill="#33333F"/>
+            </g>
+            <g>
+              <rect x="60" y="176" width="126" height="50" rx="14" fill="#1F1F27" stroke="#1F6B4C" stroke-width="2"/>
+              <circle cx="84" cy="201" r="10" fill="#123023"/><path d="M79 201l4 4 7-8" stroke="#3DDC97" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="102" y="192" width="62" height="6" rx="3" fill="#1F6B4C"/><rect x="102" y="206" width="40" height="6" rx="3" fill="#1B4A37"/>
+            </g>
+            <path d="M262 150l62 24v52c0 46-30 82-62 96-32-14-62-50-62-96v-52l62-24z" fill="#E5384F"/>
+            <path d="M262 150l62 24v52c0 46-30 82-62 96z" fill="#C42440" opacity=".35"/>
+            <path d="M236 232l20 20 36-40" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </section>
+
+      <section class="features" id="features" aria-label="ฟีเจอร์หลัก">
+        <a class="feature f-blue" href="check.html">
+          <span class="tile"><svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4V5z"/><path d="M8 9h8M8 12h5"/></svg></span>
+          <h3>ตรวจสอบข้อความ</h3>
+          <p>วางข้อความ SMS หรือแชตที่สงสัย เพื่อวิเคราะห์ด้วย NLP</p>
+        </a>
+        <a class="feature f-rose" href="history.html">
+          <span class="tile"><svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+          <h3>ผลวิเคราะห์และประวัติ</h3>
+          <p>ดูคำสำคัญที่พบ ที่มาของคะแนน และย้อนดูการตรวจสอบก่อนหน้า</p>
+        </a>
+        <a class="feature f-mint" href="model.html">
+          <span class="tile"><svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 9h6v6H9zM9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></svg></span>
+          <h3>ข้อมูลโมเดล AI</h3>
+          <p>ผลทดสอบ Accuracy, Precision, Recall, F1-score ของโมเดลในโครงงาน</p>
+        </a>
+      </section>
+
+      <div class="banner">
+        <svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>
+        <div><strong>เพราะทุกข้อความ อาจไม่ใช่สิ่งที่คุณคิด</strong><span>ให้ AI ช่วยตรวจสอบก่อนที่คุณจะกดลิงก์หรือโอนเงิน</span></div>
+      </div>
+
+      <section class="hotline">
+        <div><strong>สงสัยว่ากำลังคุยกับมิจฉาชีพ หรือเผลอโอนเงินไปแล้ว</strong><span>ศูนย์ปราบปรามอาชญากรรมทางเทคโนโลยี โทรฟรีตลอด 24 ชั่วโมง</span></div>
+        <a class="btn btn-call" href="tel:1441">โทร 1441</a>
+      </section>
+    </div>
+  </main>
+
+  <script src="js/shared.js"></script>
+  <script>SG.mount('home');</script>
+</body>
+</html>

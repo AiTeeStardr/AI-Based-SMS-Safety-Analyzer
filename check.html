@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0B0B0E">
+  <title>ตรวจสอบ SMS — SMS Guard AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <main>
+    <div class="wrap narrow">
+      <div class="page-head">
+        <span class="tile"><svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4V5z"/><path d="M8 9h8M8 12h5"/></svg></span>
+        <div><h1>ตรวจสอบ SMS</h1><p>วางข้อความ SMS หรือแชตที่สงสัย แล้วกดเริ่มวิเคราะห์</p></div>
+      </div>
+
+      <section class="card" aria-labelledby="hM">
+        <h2 id="hM"><svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4V5z"/><path d="M8 9h8M8 12h5"/></svg><label for="msg">ข้อความ SMS</label></h2>
+        <div class="msg-tools">
+          <button type="button" class="btn btn-sm btn-ghost" id="pasteBtn">วางจากคลิปบอร์ด</button>
+          <button type="button" class="btn btn-sm btn-ghost" id="clearBtn">ล้าง</button>
+        </div>
+        <div class="field-wrap">
+          <textarea id="msg" class="msg" maxlength="1000" placeholder="วางข้อความที่ต้องการตรวจสอบที่นี่..."></textarea>
+          <span class="counter" id="counter">0/1,000</span>
+        </div>
+        <div class="examples">
+          <h3>ตัวอย่างข้อความ (แตะเพื่อใส่ในช่อง)</h3>
+          <div class="chips" aria-label="ตัวอย่างแบบมิจฉาชีพ">
+            <button type="button" class="chip scam" data-s="heng">บาคาร่า HENG88</button>
+            <button type="button" class="chip scam" data-s="slot">สล็อต PG ไหลรัว</button>
+            <button type="button" class="chip scam" data-s="parcel">พัสดุตกค้าง</button>
+            <button type="button" class="chip scam" data-s="loan">เงินกู้ด่วน 100k</button>
+            <button type="button" class="chip scam" data-s="electric">คืนค่าไฟ/มิเตอร์</button>
+            <button type="button" class="chip scam" data-s="bank">บัญชีถูกระงับ</button>
+            <button type="button" class="chip scam" data-s="job">งานเสริมแอดไลน์</button>
+          </div>
+          <div class="chips" style="margin-top:.4rem" aria-label="ตัวอย่างแบบของจริง">
+            <button type="button" class="chip real" data-s="instagram">รีเซ็ตรหัส Instagram</button>
+            <button type="button" class="chip real" data-s="trueid">ซีรีส์ TrueID NOW</button>
+            <button type="button" class="chip real" data-s="telegram">Telegram login</button>
+            <button type="button" class="chip real" data-s="truenet">SMS เน็ตทรู</button>
+            <button type="button" class="chip real" data-s="otp">OTP ธนาคาร</button>
+            <button type="button" class="chip real" data-s="salary">เงินเข้าบัญชี</button>
+            <button type="button" class="chip real" data-s="doctor">นัดพบแพทย์</button>
+            <button type="button" class="chip real" data-s="chat">แชตในครอบครัว</button>
+          </div>
+        </div>
+        <div class="go-row">
+          <button type="button" class="btn btn-primary btn-block" id="go"><svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>เริ่มวิเคราะห์</button>
+        </div>
+        <p class="hint" style="display:flex;gap:.4rem;align-items:flex-start;margin-top:.8rem"><svg class="ic" aria-hidden="true" viewBox="0 0 24 24" style="margin-top:.2rem"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>ข้อความถูกประมวลผลในเบราว์เซอร์ของคุณ ไม่ถูกส่งไปที่ใด</p>
+      </section>
+    </div>
+  </main>
+
+  <script src="js/shared.js"></script>
+  <script src="js/engine.js"></script>
+  <script>
+    SG.mount('check');
+    const $ = id => document.getElementById(id);
+    const msg = $('msg');
+
+    function updateCounter() { $('counter').textContent = msg.value.length.toLocaleString('en-US') + '/1,000'; }
+    msg.addEventListener('input', updateCounter);
+    document.querySelectorAll('[data-s]').forEach(b => b.onclick = () => {
+      msg.value = SG.samples[b.dataset.s]; updateCounter(); msg.focus();
+    });
+    $('clearBtn').onclick = () => { msg.value = ''; updateCounter(); msg.focus(); };
+    $('pasteBtn').onclick = async () => {
+      try { const t = await navigator.clipboard.readText(); if (t) { msg.value = t.slice(0, 1000); updateCounter(); return; } } catch (e) {}
+      msg.focus(); SG.toast('เบราว์เซอร์ไม่อนุญาตให้อ่านคลิปบอร์ด กรุณากดค้างแล้ววางในช่อง');
+    };
+
+    $('go').onclick = () => {
+      const text = msg.value.trim();
+      if (!text) { msg.focus(); SG.toast('กรุณาวางข้อความก่อน'); return; }
+      const btn = $('go'); btn.disabled = true; btn.textContent = 'กำลังวิเคราะห์...';
+      setTimeout(() => {
+        const rec = SG.history.add(SG.analyze(text), 'text');
+        location.href = 'result.html?id=' + encodeURIComponent(rec.id);
+      }, 250);
+    };
+  </script>
+</body>
+</html>

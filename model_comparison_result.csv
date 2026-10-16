@@ -1,0 +1,5 @@
+﻿โมเดล NLP,Accuracy,Precision,Recall,F1-Score,ROC-AUC,5-Fold CV
+Multinomial Naive Bayes,100.0%,100.0%,100.0%,100.0%,1.0000,100.0%
+Logistic Regression,100.0%,100.0%,100.0%,100.0%,1.0000,100.0%
+Support Vector Machine (LinearSVC),100.0%,100.0%,100.0%,100.0%,1.0000,100.0%
+Random Forest Classifier,100.0%,100.0%,100.0%,100.0%,1.0000,100.0%

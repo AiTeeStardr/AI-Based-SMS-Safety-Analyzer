@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0B0B0E">
+  <title>ประวัติการตรวจสอบ — SMS Guard AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <main>
+    <div class="wrap">
+      <div class="page-head">
+        <span class="tile"><svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+        <div><h1>ประวัติการตรวจสอบ</h1><p>รายการข้อความที่คุณเคยตรวจสอบทั้งหมด เก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น</p></div>
+      </div>
+
+      <div class="filters" role="search">
+        <select class="input" id="fLevel" aria-label="กรองตามผลการวิเคราะห์">
+          <option value="">ทุกผลการวิเคราะห์</option>
+          <option value="danger">อันตราย</option>
+          <option value="warn">น่าสงสัย</option>
+          <option value="safe">ปลอดภัย</option>
+        </select>
+        <select class="input" id="fDate" aria-label="กรองตามช่วงเวลา">
+          <option value="0">ทุกช่วงเวลา</option>
+          <option value="1">วันนี้</option>
+          <option value="7">7 วันที่ผ่านมา</option>
+          <option value="30">30 วันที่ผ่านมา</option>
+        </select>
+        <div class="search"><svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input class="input" id="fQ" type="search" placeholder="ค้นหาข้อความ..." aria-label="ค้นหาข้อความ"></div>
+        <button type="button" class="btn btn-sm" id="clearAll"><svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"/></svg>ล้างประวัติ</button>
+      </div>
+
+      <p class="count-note" id="count"></p>
+      <div id="listWrap"></div>
+    </div>
+  </main>
+
+  <script src="js/shared.js"></script>
+  <script>
+    SG.mount('history');
+    const esc = SG.escapeHtml, ic = SG.icon, PER = 10;
+    let page = 1;
+    const $ = id => document.getElementById(id);
+
+    function filtered() {
+      const lv = $('fLevel').value, days = +$('fDate').value, q = $('fQ').value.trim().toLowerCase();
+      const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+      const since = days === 0 ? 0 : days === 1 ? startOfToday.getTime() : Date.now() - days * 86400000;
+      return SG.history.all().filter(r =>
+        (!lv || r.level === lv) && r.ts >= since && (!q || r.text.toLowerCase().includes(q) || (r.category || '').toLowerCase().includes(q)));
+    }
+
+    function draw() {
+      const all = SG.history.all(), list = filtered();
+      const pages = Math.max(1, Math.ceil(list.length / PER));
+      page = Math.min(page, pages);
+      const rows = list.slice((page - 1) * PER, page * PER);
+      $('count').textContent = all.length ? `แสดง ${list.length.toLocaleString('th-TH')} จาก ${all.length.toLocaleString('th-TH')} รายการ` : '';
+
+      if (!all.length) {
+        $('listWrap').innerHTML = `<div class="card empty">${ic('clock')}<h2 style="font-size:1.2rem;justify-content:center;margin:0">ยังไม่มีประวัติการตรวจสอบ</h2><p style="color:var(--muted)">ทุกครั้งที่วิเคราะห์ข้อความ ผลจะถูกเก็บไว้ที่นี่</p><a class="btn btn-primary" href="check.html">เริ่มตรวจสอบ SMS</a></div>`;
+        return;
+      }
+      if (!list.length) {
+        $('listWrap').innerHTML = `<div class="card empty">${ic('search')}<p>ไม่พบรายการที่ตรงกับตัวกรอง ลองเปลี่ยนคำค้นหาหรือช่วงเวลา</p></div>`;
+        return;
+      }
+      $('listWrap').innerHTML = `
+        <div class="table-wrap">
+          <table class="hist">
+            <thead><tr><th>วัน-เวลา</th><th>ข้อความ (ย่อ)</th><th>ประเภท</th><th>ความเสี่ยง</th><th>ผลการวิเคราะห์</th><th><span class="sr-only">เปิดดู</span></th></tr></thead>
+            <tbody>${rows.map(r => `
+              <tr class="row" data-level="${r.level}" data-id="${r.id}" tabindex="0" role="link" aria-label="เปิดผลวิเคราะห์ ${esc(r.text.slice(0, 40))}">
+                <td class="c-time">${esc(SG.fmtDate(r.ts))}</td>
+                <td class="c-text"><div class="cell-text">${esc(r.text.replace(/\s+/g, ' '))}</div></td>
+                <td class="c-cat"><span class="dot"></span>${esc(r.category)}</td>
+                <td class="c-pct"><span class="pct">${r.percent}%</span></td>
+                <td class="c-res"><span class="pill">${SG.levelText[r.level]}</span></td>
+                <td class="c-go">${ic('chevron-right')}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+          ${pages > 1 ? `<div class="pager" aria-label="เปลี่ยนหน้า">
+            <button type="button" data-p="${page - 1}" ${page === 1 ? 'disabled' : ''} aria-label="หน้าก่อนหน้า">${ic('chevron-left')}</button>
+            ${Array.from({ length: pages }, (_, i) => i + 1).map(p => `<button type="button" data-p="${p}" ${p === page ? 'aria-current="page"' : ''}>${p}</button>`).join('')}
+            <button type="button" data-p="${page + 1}" ${page === pages ? 'disabled' : ''} aria-label="หน้าถัดไป">${ic('chevron-right')}</button>
+          </div>` : ''}
+        </div>`;
+    }
+
+    $('listWrap').addEventListener('click', e => {
+      const b = e.target.closest('[data-p]'); if (b && !b.disabled) { page = +b.dataset.p; draw(); return; }
+      const tr = e.target.closest('tr.row'); if (tr) location.href = 'result.html?id=' + encodeURIComponent(tr.dataset.id);
+    });
+    $('listWrap').addEventListener('keydown', e => {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('tr.row')) { e.preventDefault(); location.href = 'result.html?id=' + encodeURIComponent(e.target.dataset.id); }
+    });
+    ['fLevel', 'fDate'].forEach(id => $(id).addEventListener('change', () => { page = 1; draw(); }));
+    $('fQ').addEventListener('input', () => { page = 1; draw(); });
+    $('clearAll').addEventListener('click', () => {
+      if (!SG.history.all().length) return;
+      if (confirm('ล้างประวัติการตรวจสอบทั้งหมดในเครื่องนี้? การกระทำนี้ย้อนกลับไม่ได้')) { SG.history.clear(); page = 1; draw(); }
+    });
+    draw();
+  </script>
+</body>
+</html>
