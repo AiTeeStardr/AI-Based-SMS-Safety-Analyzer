@@ -1,0 +1,9 @@
+{
+  "framework": null,
+  "functions": {
+    "api/analyze.py": {
+      "includeFiles": "model/scam_model.joblib",
+      "maxDuration": 15
+    }
+  }
+}

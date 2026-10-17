@@ -71,7 +71,7 @@
   /* ---------- Python backend (server.py) — ถ้าติดต่อไม่ได้คืน null แล้วเว็บใช้เฉพาะระบบกฎ ---------- */
   SG.api = {
     async analyze(text) {
-      const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 3000);
+      const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 8000);
       try {
         const res = await fetch('api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }), signal: ctl.signal });
         if (!res.ok) return null;

@@ -20,57 +20,17 @@ import sys
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 
-import joblib
-import numpy as np
-
 ROOT = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(ROOT, "model", "scam_model.joblib")
+sys.path.insert(0, os.path.join(ROOT, "api"))
+import _ml  # โค้ดโมเดลที่ใช้ร่วมกับ api/analyze.py (Vercel)
+
+MODEL = _ml.MODEL
 METRICS_PATH = os.path.join(ROOT, "model", "metrics.json")
-MAX_TEXT = 1000
 MAX_BODY = 16 * 1024
 SERVE_EXT = {".html", ".css", ".js", ".json", ".csv", ".png", ".svg", ".ico", ".md"}
 
-try:
-    MODEL = joblib.load(MODEL_PATH)
-except Exception as e:  # ยังไม่ได้ train
-    MODEL = None
-    print(f"[warn] โหลดโมเดลไม่ได้ ({e}) — รัน python train_model.py ก่อน", file=sys.stderr)
-
-
-def explain(text, k=5):
-    """n-gram ที่ผลักให้ข้อความนี้ไปทางมิจฉาชีพมากที่สุด (น้ำหนักฟีเจอร์ x ค่า TF-IDF)"""
-    vec, clf = MODEL.steps[0][1], MODEL.steps[-1][1]
-    if hasattr(clf, "coef_"):
-        w = clf.coef_[0]
-    elif hasattr(clf, "feature_log_prob_"):
-        w = clf.feature_log_prob_[1] - clf.feature_log_prob_[0]
-    else:
-        return []
-    x = vec.transform([text])
-    contrib = x.multiply(w).tocoo()
-    names = vec.get_feature_names_out()
-    scored = sorted(zip(contrib.col, contrib.data), key=lambda p: -p[1])
-    chosen = []
-    for i, v in scored:
-        if v <= 0:
-            break
-        t = names[i].strip()
-        if len(t) < 3 or " " in t or any(t in c or c in t for c in chosen):
-            continue
-        chosen.append(t)
-        if len(chosen) == k:
-            break
-    return chosen
-
-
-def predict(text):
-    prob = float(MODEL.predict_proba([text])[0][1])
-    return {
-        "label": "scam" if prob >= 0.5 else "ham",
-        "scam_probability": round(prob, 4),
-        "top_terms": explain(text) if prob >= 0.5 else [],
-        "model": os.path.basename(MODEL_PATH),
-    }
+if MODEL is None:
+    print(f"[warn] โหลดโมเดลไม่ได้ ({_ml.LOAD_ERROR}) — รัน python train_model.py ก่อน", file=sys.stderr)
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -130,7 +90,7 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(400, {"error": "ต้องส่ง JSON รูปแบบ {\"text\": \"...\"}"})
         if not text:
             return self._json(400, {"error": "ข้อความว่าง"})
-        return self._json(200, predict(text[:MAX_TEXT]))
+        return self._json(200, _ml.predict(text))
 
     def log_message(self, fmt, *args):
         sys.stderr.write("[%s] %s\n" % (self.log_date_time_string(), fmt % args))

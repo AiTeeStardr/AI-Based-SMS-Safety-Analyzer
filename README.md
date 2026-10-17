@@ -38,12 +38,14 @@
 
 - **ผลหลัก** มาจากระบบกฎ (อธิบายได้ว่าคะแนนมาจากไหน) ส่วนโมเดล ML แสดงเป็น "ความเห็นที่สอง" และบอกเมื่อผลต่างกัน
 - ถ้าไม่มี Python backend (เช่นเปิดผ่าน GitHub Pages) เว็บยังทำงานได้ด้วยระบบกฎอย่างเดียว
+- **Deploy บน Vercel:** `api/analyze.py` เป็น serverless function (Python) ที่ใช้โค้ดโมเดลชุดเดียวกับ `server.py` ผ่าน `api/_ml.py` ตั้งค่าใน `vercel.json` (Application Preset = Other) แล้ว Import repo นี้ได้เลย
 
 ---
 
 ## 📁 ไฟล์สำคัญในโปรเจกต์นี้
 
-1. **`css/app.css`**: ธีมโทนดำ-แดงและสไตล์ร่วมของทุกหน้า
+1. **`api/analyze.py`, `api/_ml.py`, `vercel.json`**: Python backend แบบ serverless สำหรับ Vercel
+2. **`css/app.css`**: ธีมโทนดำ-แดงและสไตล์ร่วมของทุกหน้า
 2. **`js/engine.js`**: ระบบกฎตรวจจับ (ฟังก์ชัน `SG.analyze`) พร้อมรายชื่อโดเมนทางการ
 3. **`js/shared.js`**: เมนู ไอคอน ที่เก็บประวัติ และตัววาดกราฟ/มาตรวัด
 4. **`server.py`**: Python backend (เสิร์ฟเว็บ + REST API โหลดโมเดลมาทำนาย)
