@@ -1,7 +1,8 @@
 # 🛡️ SMS Guard AI — ตรวจจับข้อความมิจฉาชีพและ SMS หลอกลวง
 ### โครงงานการเรียนรู้ของเครื่องและการประมวลผลภาษาธรรมชาติ (NLP & Supervised Learning)
 
-🌐 **เว็บไซต์ (GitHub Pages):** [https://aiteestardr.github.io/AI-Based-SMS-Safety-Analyzer/](https://aiteestardr.github.io/AI-Based-SMS-Safety-Analyzer/)
+🌐 **เว็บไซต์ (Vercel — มี Python backend + โมเดล ML):** [https://ai-based-sms-safety-analyzer.vercel.app](https://ai-based-sms-safety-analyzer.vercel.app)  
+🌐 **GitHub Pages (ไม่มี backend ใช้ระบบกฎอย่างเดียว):** [https://aiteestardr.github.io/AI-Based-SMS-Safety-Analyzer/](https://aiteestardr.github.io/AI-Based-SMS-Safety-Analyzer/)
 📑 **เล่มรายงานฉบับเต็ม:** [PROJECT_REPORT.md](PROJECT_REPORT.md)
 
 วางข้อความ SMS หรือแชตที่สงสัย แล้วระบบจะบอกระดับความเสี่ยง ไฮไลต์คำและลิงก์ที่น่าสงสัย พร้อมกราฟแสดงว่าแต่ละจุดเพิ่มหรือลดคะแนนไปเท่าไร ทำงานในเบราว์เซอร์ทั้งหมด ข้อความไม่ถูกส่งไปที่ใด ประวัติการตรวจเก็บในเครื่องของผู้ใช้เท่านั้น
