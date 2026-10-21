@@ -1,5 +1,5 @@
 {
-  "trained_at": "2026-10-21T16:27:48",
+  "trained_at": "2026-10-21T20:23:15",
   "dataset": {
     "file": "thai_scam_sms_dataset.csv",
     "n_raw": 700,
@@ -152,21 +152,21 @@
     ]
   },
   "external": {
-    "file": "external_check.csv",
-    "n": 15,
-    "n_correct": 11,
-    "accuracy": 0.7333333333333333,
-    "precision": 0.6363636363636364,
+    "file": "external_test_100.csv",
+    "n": 100,
+    "n_correct": 68,
+    "accuracy": 0.68,
+    "precision": 0.6097560975609756,
     "recall": 1.0,
-    "f1": 0.7777777777777778,
+    "f1": 0.7575757575757576,
     "confusion": [
       [
-        4,
-        4
+        18,
+        32
       ],
       [
         0,
-        7
+        50
       ]
     ]
   }
