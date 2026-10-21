@@ -780,6 +780,7 @@
        คืนค่าเป็นอ็อบเจ็กต์ที่เก็บลง localStorage ได้ (JSON-safe)
        ============================================================ */
     const BASE_SCORE = 15;
+    const SG_THRESHOLD = 50;   // คะแนนความเสี่ยง >= 50 = ไม่น่าเชื่อถือ
     const scamRuleLabels = [
       'ลิงก์ต้องสงสัย', 'เว็บพนันออนไลน์', 'แอบอ้างขนส่ง', 'เงินกู้นอกระบบ', 'แอบอ้างหน่วยงานรัฐ',
       'แอบอ้างธนาคาร', 'งานเสริมหลอกลวง', 'แจกรางวัลลวง', 'ชวนแอดไลน์', 'เร่งรัดเวลา'
@@ -887,7 +888,7 @@
       }
 
       const percent = Math.min(Math.max(riskScore, 1), 99);
-      const level = percent >= 60 ? 'danger' : percent >= 30 ? 'warn' : 'safe';
+      const level = percent >= SG_THRESHOLD ? 'danger' : 'safe';   // ตัดสินแบบสองคลาส: ไม่น่าเชื่อถือ (มิจฉาชีพ=1) / น่าเชื่อถือ (0)
 
       // หมวดของข้อความ: กฎที่ให้คะแนนสูงสุด หรือสาเหตุที่ระบบปรับคะแนนทับ
       let category;
@@ -929,4 +930,5 @@
     global.SG.analyze = analyze;
     global.SG.samples = samples;
     global.SG.BASE_SCORE = BASE_SCORE;
+    global.SG.THRESHOLD = SG_THRESHOLD;
 })(window);

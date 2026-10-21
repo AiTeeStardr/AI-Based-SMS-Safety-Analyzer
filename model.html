@@ -33,7 +33,7 @@
 
       <div class="model-grid">
         <section class="card" aria-labelledby="hC">
-          <h2 id="hC"><svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 20V11M11 20V4M17 20v-6M3 20h18"/></svg>เปรียบเทียบโมเดล (ชุดทดสอบ)</h2>
+          <h2 id="hC"><svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 20V11M11 20V4M17 20v-6M3 20h18"/></svg>เปรียบเทียบโมเดล (k-fold)</h2>
           <div class="scroll-x"><table class="models" id="tbl"><thead></thead><tbody></tbody></table></div>
           <h3 class="t" style="margin:1.25rem 0 .6rem;font-size:.95rem">Confusion matrix ของโมเดลที่ใช้งานจริง</h3>
           <div class="cm" id="cm"></div>
@@ -65,21 +65,22 @@
     SG.mount('model');
     const $ = id => document.getElementById(id), esc = SG.escapeHtml, ic = SG.icon;
     const pct = v => (v * 100).toFixed(1) + '%';
-    const NAMES = { instagram: 'รีเซ็ตรหัส Instagram', trueid: 'ซีรีส์ TrueID NOW', telegram: 'Telegram login', truenet: 'SMS เน็ตทรู', heng: 'บาคาร่า HENG88', slot: 'สล็อต PG ไหลรัว', parcel: 'พัสดุตกค้าง', loan: 'เงินกู้ด่วน', electric: 'คืนค่าไฟ/มิเตอร์', bank: 'บัญชีถูกระงับ', job: 'งานเสริมแอดไลน์', otp: 'OTP ธนาคาร', salary: 'เงินเข้าบัญชี', doctor: 'นัดพบแพทย์', chat: 'แชตในครอบครัว' };
+    const ms = (v, sd) => pct(v) + ' ±' + (sd * 100).toFixed(1);
 
     fetch('model/metrics.json').then(r => { if (!r.ok) throw 0; return r.json(); }).then(m => {
-      const d = m.dataset, best = m.models.find(x => x.name === m.deployed) || m.models[0];
+      const d = m.dataset, ev = m.evaluation, best = m.models.find(x => x.name === m.deployed) || m.models[0];
       const k = [
-        ['Accuracy', best.accuracy, 'shield-check', 'f-mint', 'ถูกกี่ส่วนจากทั้งหมด'],
-        ['Precision', best.precision, 'check', 'f-blue', 'ที่ทายว่ามิจฉาชีพ ถูกกี่ส่วน'],
-        ['Recall', best.recall, 'search', 'f-sky', 'มิจฉาชีพจริง จับได้กี่ส่วน'],
-        ['F1-score', best.f1, 'chart', 'f-rose', 'สมดุล Precision/Recall']
+        ['Accuracy', best.accuracy, best.accuracy_std, 'shield-check', 'f-mint', 'ถูกกี่ส่วนจากทั้งหมด'],
+        ['Precision', best.precision, best.precision_std, 'check', 'f-blue', 'ที่ทายว่ามิจฉาชีพ ถูกกี่ส่วน'],
+        ['Recall', best.recall, best.recall_std, 'search', 'f-sky', 'มิจฉาชีพจริง จับได้กี่ส่วน'],
+        ['F1-score', best.f1, best.f1_std, 'chart', 'f-rose', 'สมดุล Precision/Recall']
       ];
-      $('kpis').innerHTML = k.map(x => `<div class="kpi ${x[3]}"><div class="top">${ic(x[2])}${x[0]}</div><b>${pct(x[1])}</b><small>${x[4]}</small></div>`).join('');
-      $('kpiNote').textContent = `โมเดลที่ใช้งานจริง: ${best.name} · ${m.features} · ทดสอบบน ${d.n_test} ข้อความที่ไม่ใช้ฝึก · ฝึกเมื่อ ${new Date(m.trained_at).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+      $('kpis').innerHTML = k.map(x => `<div class="kpi ${x[4]}"><div class="top">${ic(x[3])}${x[0]}</div><b>${pct(x[1])}</b><small>±${(x[2] * 100).toFixed(1)} · ${x[5]}</small></div>`).join('');
+      $('kpiNote').textContent = `โมเดลที่ใช้งานจริง: ${best.name} · ${m.features} · ประเมินด้วย ${ev.method} (ทดสอบทีละ ${Math.round(100 / ev.k)}% เทรนด้วย ${100 - Math.round(100 / ev.k)}% รวม ${ev.n_folds_total} ครั้ง) · ค่าเฉลี่ย ± SD`;
 
-      $('tbl').querySelector('thead').innerHTML = '<tr><th>โมเดล</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>ROC-AUC</th><th>CV F1 (5 fold)</th></tr>';
-      $('tbl').querySelector('tbody').innerHTML = m.models.map(x => `<tr><td>${esc(x.name)}${x.name === m.deployed ? ' <span class="badge ok">ใช้งานจริง</span>' : ''}</td><td>${pct(x.accuracy)}</td><td>${pct(x.precision)}</td><td>${pct(x.recall)}</td><td>${pct(x.f1)}</td><td>${x.roc_auc.toFixed(3)}</td><td>${pct(x.cv_f1_mean)} ±${(x.cv_f1_std * 100).toFixed(1)}</td></tr>`).join('');
+      $('tbl').querySelector('thead').innerHTML = '<tr><th>โมเดล</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>ROC-AUC</th></tr>';
+      $('tbl').querySelector('tbody').innerHTML = m.models.map(x => `<tr><td>${esc(x.name)}${x.name === m.deployed ? ' <span class="badge ok">ใช้งานจริง</span>' : ''}</td><td>${ms(x.accuracy, x.accuracy_std)}</td><td>${ms(x.precision, x.precision_std)}</td><td>${ms(x.recall, x.recall_std)}</td><td>${ms(x.f1, x.f1_std)}</td><td>${x.roc_auc.toFixed(3)} ±${x.roc_auc_std.toFixed(3)}</td></tr>`).join('');
+      document.getElementById('hC').lastChild.textContent = 'เปรียบเทียบโมเดล (k-fold cross-validation)';
 
       const [[tn, fp], [fn, tp]] = best.confusion;
       $('cm').innerHTML = `<div class="h"></div><div class="h">ทายว่าปกติ</div><div class="h">ทายว่ามิจฉาชีพ</div>
@@ -88,20 +89,19 @@
 
       $('dTotal').textContent = d.n_unique.toLocaleString('th-TH');
       $('donut').style.setProperty('--a', (d.n_scam / d.n_unique * 100) + '%');
-      $('legend').innerHTML = `<div><i style="background:var(--brand)"></i>ข้อความมิจฉาชีพ ${d.n_scam} (${(d.n_scam / d.n_unique * 100).toFixed(0)}%)</div><div><i style="background:#9C9CAC"></i>ข้อความปกติ ${d.n_ham} (${(d.n_ham / d.n_unique * 100).toFixed(0)}%)</div>
-        <div style="color:var(--muted);font-size:.8rem">ฝึก ${d.n_train} · ทดสอบ ${d.n_test}</div>`;
+      $('legend').innerHTML = `<div><i style="background:var(--brand)"></i>ข้อความมิจฉาชีพ ${d.n_scam} (${(d.n_scam / d.n_unique * 100).toFixed(0)}%)</div><div><i style="background:#9C9CAC"></i>ข้อความปกติ ${d.n_ham} (${(d.n_ham / d.n_unique * 100).toFixed(0)}%)</div>`;
 
       const ex = m.external;
       if (ex && ex.n) {
-        $('extSummary').innerHTML = `ข้อความ ${ex.n} ข้อความที่โมเดลไม่เคยเห็น (ไฟล์ <code>${esc(ex.file)}</code>) โมเดลทายถูก <b>${ex.n_correct}/${ex.n}</b>`;
-        $('extList').innerHTML = ex.items.map(i => `<li class="${i.correct ? '' : 'wrong'}"><span>${esc(NAMES[i.id] || i.id)} <small style="color:var(--muted)">(จริง: ${i.label ? 'มิจฉาชีพ' : 'ปกติ'})</small></span><b>${Math.round(i.scam_probability * 100)}% ${i.correct ? '✓' : '✗'}</b></li>`).join('');
+        $('extSummary').innerHTML = `ข้อความ ${ex.n} ข้อความที่ไม่ได้ใช้เทรน (ไฟล์ <code>${esc(ex.file)}</code>) โมเดลทายถูก <b>${ex.n_correct}/${ex.n}</b> · Accuracy ${pct(ex.accuracy)} · Precision ${pct(ex.precision)} · Recall ${pct(ex.recall)} · F1 ${pct(ex.f1)} <br><a href="examples.html" style="color:var(--blue)">ดูข้อความทดสอบทั้งหมด พร้อมตัวอย่างตรวจถูก/ผิด อย่างละ 10 ข้อความ</a>`;
+        $('extList').innerHTML = '';
       } else $('extSummary').textContent = 'ไม่มีข้อมูลการทดสอบนอกชุดข้อมูล';
 
       const dup = d.n_duplicates;
-      let notes = '';
-      if (dup > 0) notes += `<div class="note info">${ic('info')}<div><b>ตัดข้อความซ้ำก่อนฝึก</b> ชุดข้อมูลเดิมมี ${d.n_raw.toLocaleString('th-TH')} รายการ แต่ซ้ำกัน ${dup.toLocaleString('th-TH')} รายการ เหลือ ${d.n_unique.toLocaleString('th-TH')} ข้อความที่ไม่ซ้ำ ผลทดสอบก่อนตัดซ้ำที่ได้ 100% จึงสูงเกินจริง</div></div>`;
-      if (ex && ex.n && ex.n_correct < ex.n) notes += `<div class="note">${ic('alert')}<div><b>โมเดลยังไม่แม่นกับข้อความนอกชุดข้อมูล</b> ชุดข้อมูลมีขนาดเล็กและสร้างจากแม่แบบข้อความ ผลบนชุดทดสอบ (${pct(best.accuracy)}) จึงสูงกว่าผลจริง หน้าเว็บจึงให้ระบบกฎเป็นผลหลัก และแสดงโมเดล ML เป็นความเห็นที่สอง หากเก็บ SMS จริงเพิ่มแล้วฝึกใหม่ (<code>python train_model.py</code>) ผลจะดีขึ้น</div></div>`;
-      notes += `<div class="note info">${ic('info')}<div><b>สถาปัตยกรรม</b> เบราว์เซอร์ส่งข้อความไป <code>POST /api/analyze</code> ที่ <code>server.py</code> (Python) ซึ่งโหลดโมเดลจาก <code>model/scam_model.joblib</code> แล้วคืนความน่าจะเป็น ส่วนระบบกฎและกราฟคะแนนทำงานในเบราว์เซอร์ ถ้าไม่มีเซิร์ฟเวอร์ Python เว็บยังทำงานได้ด้วยระบบกฎอย่างเดียว</div></div>`;
+      let notes = `<div class="note info">${ic('info')}<div><b>การตัดสินแบบสองคลาส</b> ผลของระบบมีสองค่าเท่านั้น คือ 1 = ไม่น่าเชื่อถือ (มิจฉาชีพ) และ 0 = น่าเชื่อถือ ตัดสินที่ความน่าจะเป็น 0.5 จึงคำนวณ Precision, Recall และ Confusion Matrix ได้ตรงตามนิยาม</div></div>`;
+      if (dup > 0) notes += `<div class="note info">${ic('info')}<div><b>ตัดข้อความซ้ำก่อนฝึก</b> ชุดข้อมูลเดิมมี ${d.n_raw.toLocaleString('th-TH')} รายการ แต่ซ้ำกัน ${dup.toLocaleString('th-TH')} รายการ เหลือ ${d.n_unique.toLocaleString('th-TH')} ข้อความที่ไม่ซ้ำ</div></div>`;
+      notes += `<div class="note">${ic('alert')}<div><b>ผลจาก cross-validation ยังอาจสูงกว่าความจริง</b> ชุดข้อมูลสร้างจากแม่แบบข้อความ ข้อความที่คล้ายกันมากอาจอยู่ทั้งฝั่งเทรนและทดสอบ ตัวเลขที่เชื่อถือได้ที่สุดคือผลบนข้อความนอกชุดข้อมูลที่เก็บมาแยกต่างหาก${ex && ex.n < 100 ? ` (ตอนนี้มี ${ex.n} ข้อความ ยังไม่ครบ 100)` : ''}</div></div>`;
+      notes += `<div class="note info">${ic('info')}<div><b>สถาปัตยกรรม</b> เบราว์เซอร์ส่งข้อความไป <code>POST /api/analyze</code> (Python) ซึ่งโหลด <code>model/scam_model.joblib</code> แล้วคืนความน่าจะเป็น ส่วนระบบกฎและกราฟคะแนนทำงานในเบราว์เซอร์ ถ้าไม่มี Python เว็บยังทำงานได้ด้วยระบบกฎอย่างเดียว</div></div>`;
       $('notes').innerHTML = notes;
     }).catch(() => {
       $('kpis').innerHTML = '';

@@ -21,9 +21,8 @@
       <div class="filters" role="search">
         <select class="input" id="fLevel" aria-label="กรองตามผลการวิเคราะห์">
           <option value="">ทุกผลการวิเคราะห์</option>
-          <option value="danger">อันตราย</option>
-          <option value="warn">น่าสงสัย</option>
-          <option value="safe">ปลอดภัย</option>
+          <option value="danger">ไม่น่าเชื่อถือ</option>
+          <option value="safe">น่าเชื่อถือ</option>
         </select>
         <select class="input" id="fDate" aria-label="กรองตามช่วงเวลา">
           <option value="0">ทุกช่วงเวลา</option>
@@ -52,7 +51,7 @@
       const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
       const since = days === 0 ? 0 : days === 1 ? startOfToday.getTime() : Date.now() - days * 86400000;
       return SG.history.all().filter(r =>
-        (!lv || r.level === lv) && r.ts >= since && (!q || r.text.toLowerCase().includes(q) || (r.category || '').toLowerCase().includes(q)));
+        (!lv || SG.normLevel(r) === lv) && r.ts >= since && (!q || r.text.toLowerCase().includes(q) || (r.category || '').toLowerCase().includes(q)));
     }
 
     function draw() {
@@ -75,12 +74,12 @@
           <table class="hist">
             <thead><tr><th>วัน-เวลา</th><th>ข้อความ (ย่อ)</th><th>ประเภท</th><th>ความเสี่ยง</th><th>ผลการวิเคราะห์</th><th><span class="sr-only">เปิดดู</span></th></tr></thead>
             <tbody>${rows.map(r => `
-              <tr class="row" data-level="${r.level}" data-id="${r.id}" tabindex="0" role="link" aria-label="เปิดผลวิเคราะห์ ${esc(r.text.slice(0, 40))}">
+              <tr class="row" data-level="${SG.normLevel(r)}" data-id="${r.id}" tabindex="0" role="link" aria-label="เปิดผลวิเคราะห์ ${esc(r.text.slice(0, 40))}">
                 <td class="c-time">${esc(SG.fmtDate(r.ts))}</td>
                 <td class="c-text"><div class="cell-text">${esc(r.text.replace(/\s+/g, ' '))}</div></td>
                 <td class="c-cat"><span class="dot"></span>${esc(r.category)}</td>
                 <td class="c-pct"><span class="pct">${r.percent}%</span></td>
-                <td class="c-res"><span class="pill">${SG.levelText[r.level]}</span></td>
+                <td class="c-res"><span class="pill">${SG.levelText[SG.normLevel(r)]}</span></td>
                 <td class="c-go">${ic('chevron-right')}</td>
               </tr>`).join('')}
             </tbody>

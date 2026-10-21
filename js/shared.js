@@ -51,7 +51,10 @@
     document.body.appendChild(t);
     setTimeout(() => t.remove(), 2800);
   };
-  SG.levelText = { danger: 'อันตราย', warn: 'น่าสงสัย', safe: 'ปลอดภัย' };
+  SG.levelText = { danger: 'ไม่น่าเชื่อถือ', safe: 'น่าเชื่อถือ' };
+  SG.THRESHOLD = 50;
+  // ประวัติเก่าอาจมีระดับ 'warn' (เวอร์ชัน 3 ระดับ) — แปลงเป็นสองคลาสตามคะแนน
+  SG.normLevel = r => (r.percent >= SG.THRESHOLD ? 'danger' : 'safe');
 
   /* ---------- History store (localStorage, อยู่ในเบราว์เซอร์เครื่องนี้เท่านั้น) ---------- */
   const KEY = 'smsguard.history.v1';
@@ -144,7 +147,8 @@
     ['home', 'index.html', 'หน้าแรก', 'home'],
     ['check', 'check.html', 'ตรวจสอบ SMS', 'message'],
     ['history', 'history.html', 'ประวัติการตรวจสอบ', 'clock'],
-    ['model', 'model.html', 'ข้อมูลโมเดล', 'cpu']
+    ['model', 'model.html', 'ข้อมูลโมเดล', 'cpu'],
+    ['examples', 'examples.html', 'ข้อมูลทดสอบ', 'check']
   ];
 
   SG.mount = function (active) {
@@ -171,7 +175,7 @@
     footer.innerHTML = `
       <div class="wrap">
         <a class="brand" href="index.html" style="margin:0">${BRAND_MARK}<span><b>SMS Guard AI</b><small>AI-Based SMS Safety Analyzer</small></span></a>
-        <div class="footer-links"><a href="index.html">หน้าแรก</a><a href="check.html">ตรวจสอบ SMS</a><a href="history.html">ประวัติ</a><a href="model.html">ข้อมูลโมเดล</a><a href="tel:1441">โทร 1441</a></div>
+        <div class="footer-links"><a href="index.html">หน้าแรก</a><a href="check.html">ตรวจสอบ SMS</a><a href="history.html">ประวัติ</a><a href="model.html">ข้อมูลโมเดล</a><a href="examples.html">ข้อมูลทดสอบ</a><a href="tel:1441">โทร 1441</a></div>
         <p>โครงงานวิศวกรรมปัญญาประดิษฐ์ EN-AI-2569-1 · ผลการตรวจเป็นการประเมินจากกฎและรายชื่อโดเมนที่ระบบรู้จัก ไม่ใช่การรับรอง</p>
       </div>`;
     document.body.appendChild(footer);

@@ -33,7 +33,7 @@
         return `<section class="card" aria-labelledby="hMl"><h2 id="hMl">${ic('cpu')}โมเดล ML (Python)</h2>
           <p class="hint" style="margin:0">ผลนี้ไม่มีข้อมูลจากโมเดล ML เพราะไม่ได้เชื่อมต่อเซิร์ฟเวอร์ Python ระบบใช้เฉพาะระบบกฎ รัน <code>python server.py</code> เพื่อเปิดโมเดล</p></section>`;
       }
-      const p = Math.round(r.ml.scam_probability * 100), mlScam = r.ml.scam_probability >= .5, rulesScam = r.percent >= 30;
+      const p = Math.round(r.ml.scam_probability * 100), mlScam = r.ml.scam_probability >= .5, rulesScam = r.percent >= SG.THRESHOLD;
       const note = mlScam === rulesScam
         ? 'ผลของโมเดลสอดคล้องกับระบบกฎ'
         : 'ผลของโมเดลต่างจากระบบกฎ โมเดลนี้ฝึกจากข้อมูลจำนวนน้อย จึงให้ระบบกฎที่อธิบายเหตุผลได้เป็นผลหลัก ใช้โมเดลเป็นความเห็นที่สอง';
@@ -48,15 +48,13 @@
     }
 
     function render(r) {
-      const L = r.level;
+      const L = SG.normLevel(r);
       const head = {
-        danger: { icon: 'shield-alert', title: 'พบว่าเป็น SMS ' + r.category, sub: 'มีความเสี่ยงสูง ควรหลีกเลี่ยง อย่ากดลิงก์' },
-        warn:   { icon: 'alert', title: 'ข้อความน่าสงสัย', sub: 'ควรตรวจสอบที่มาให้แน่ชัดก่อนกดลิงก์' },
-        safe:   { icon: 'shield-check', title: 'ไม่พบสัญญาณหลอกลวง', sub: 'ข้อความนี้ดูเป็นข้อความทางการหรือการสนทนาปกติ' }
+        danger: { icon: 'shield-alert', title: 'พบว่าเป็น SMS ' + r.category, sub: 'ไม่น่าเชื่อถือ มีความเสี่ยงสูง ควรหลีกเลี่ยง อย่ากดลิงก์' },
+        safe:   { icon: 'shield-check', title: 'น่าเชื่อถือ ไม่พบสัญญาณหลอกลวง', sub: 'ข้อความนี้ดูเป็นข้อความทางการหรือการสนทนาปกติ' }
       }[L];
       const advice = {
         danger: `<h3>${ic('shield-alert')}ทำตามนี้ทันที</h3><ol><li><strong>ห้ามกดลิงก์</strong> หรือเปิดเว็บไซต์ที่แนบมา</li><li><strong>ห้ามโอนเงิน</strong> และห้ามให้เลขบัตรประชาชน เลขบัญชี หรือรหัส OTP</li><li>บล็อกเบอร์ผู้ส่งและรายงานเป็นสแปม</li><li>หากเผลอกดหรือโอนไปแล้ว โทร <strong>1441</strong> ทันที</li></ol>`,
-        warn: `<h3>${ic('alert')}ก่อนทำอะไรต่อ</h3><p>โทรถามหน่วยงานหรือบุคคลต้นทางโดยตรงจากเบอร์ที่คุณมีอยู่แล้ว และยังไม่ต้องกดลิงก์ใดๆ</p>`,
         safe: `<h3>${ic('shield-check')}ข้อควรจำ</h3><p>ธนาคารและหน่วยงานรัฐไม่ส่ง SMS ขอรหัสผ่านหรือข้อมูลส่วนตัว หากมีข้อความลักษณะนั้น ให้ถือว่าเป็นมิจฉาชีพไว้ก่อน</p>`
       }[L];
 
@@ -111,8 +109,8 @@
               <section class="card" aria-labelledby="hW">
                 <h2 id="hW">${ic('chart')}คะแนนมาจากไหน</h2>
                 <div class="wf" id="wf" role="img" aria-label="กราฟแสดงที่มาของคะแนนความเสี่ยง"></div>
-                <div class="wf-axis" aria-hidden="true"><span></span><div><span style="left:0">0</span><span style="left:30%">30</span><span style="left:60%">60</span><span style="left:100%">100</span></div><span></span></div>
-                <p class="hint">แท่งแดงเพิ่มความเสี่ยง แท่งเขียวลดความเสี่ยง แท่งลายขาวคือการปรับตามบริบทหรือลิงก์ เส้นที่ 30 คือเริ่มเฝ้าระวัง เส้นที่ 60 คือเริ่มอันตราย</p>
+                <div class="wf-axis" aria-hidden="true"><span></span><div><span style="left:0">0</span><span style="left:50%">50</span><span style="left:100%">100</span></div><span></span></div>
+                <p class="hint">แท่งแดงเพิ่มความเสี่ยง แท่งเขียวลดความเสี่ยง แท่งลายขาวคือการปรับตามบริบทหรือลิงก์ เส้นที่ 50 คือเกณฑ์ตัดสิน ตั้งแต่ 50 ขึ้นไป = ไม่น่าเชื่อถือ ต่ำกว่า 50 = น่าเชื่อถือ</p>
               </section>
 
               ${mlCard(r)}

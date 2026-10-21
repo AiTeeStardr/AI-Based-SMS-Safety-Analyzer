@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0B0B0E">
+  <title>ข้อมูลทดสอบและตัวอย่างผลตรวจ — SMS Guard AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    .controls { display: grid; gap: .6rem; margin-bottom: 1rem; }
+    @media (min-width: 720px) { .controls { grid-template-columns: 1fr 1fr auto; } }
+    .stats { display: grid; gap: .8rem; grid-template-columns: repeat(2, 1fr); }
+    @media (min-width: 900px) { .stats { grid-template-columns: repeat(5, 1fr); } }
+    .stat { padding: .9rem 1rem; border-radius: var(--radius); background: var(--card); border: 1px solid var(--line); }
+    .stat small { color: var(--muted); font-size: .78rem; display: block; }
+    .stat b { font-size: 1.5rem; color: var(--ink); font-weight: 600; line-height: 1.3; }
+    .two { display: grid; gap: 1rem; margin-top: 1rem; }
+    @media (min-width: 900px) { .two { grid-template-columns: 1fr 1fr; align-items: start; } }
+    .two > * { min-width: 0; }
+    .ex { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; counter-reset: ex; }
+    .ex li { counter-increment: ex; padding: .65rem .8rem; border-radius: 10px; background: var(--surface2); border: 1px solid var(--line); border-left: 5px solid var(--safe); font-size: .88rem; }
+    .ex.bad li { border-left-color: var(--danger); }
+    .ex .t { white-space: pre-wrap; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+    .ex .m { margin-top: .35rem; display: flex; flex-wrap: wrap; gap: .3rem .9rem; font-size: .78rem; color: var(--muted); }
+    .ex .m b { color: var(--ink); font-weight: 500; }
+    .cm { display: grid; grid-template-columns: auto 1fr 1fr; gap: .4rem; font-size: .85rem; max-width: 24rem; }
+    .cm div { padding: .6rem .5rem; border-radius: 10px; text-align: center; background: var(--surface2); border: 1px solid var(--line); }
+    .cm .h { background: transparent; border: 0; color: var(--muted); font-size: .78rem; display: grid; place-items: center; }
+    .cm .ok b { color: var(--safe); } .cm .bad b { color: var(--danger); } .cm b { display: block; font-size: 1.5rem; color: var(--ink); line-height: 1.2; }
+    table.data { width: 100%; border-collapse: collapse; font-size: .85rem; min-width: 38rem; }
+    table.data th, table.data td { padding: .55rem .7rem; text-align: left; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+    table.data th { font-size: .76rem; color: var(--muted); background: var(--surface2); position: sticky; top: 0; }
+    table.data td.msg { max-width: 26rem; overflow-wrap: anywhere; white-space: pre-wrap; }
+    table.data tr.wrong td { background: rgba(255, 77, 94, .07); }
+    .pillx { display: inline-block; padding: 0 .55rem; border-radius: 999px; font-size: .74rem; font-weight: 600; border: 1px solid var(--line); }
+    .pillx.s { color: var(--danger); background: var(--danger-bg); border-color: var(--danger-line); } .pillx.h { color: var(--safe); background: var(--safe-bg); border-color: var(--safe-line); }
+    .tw { max-height: 32rem; overflow: auto; border: 1px solid var(--line); border-radius: 12px; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="wrap">
+      <div class="page-head">
+        <span class="tile"><svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></span>
+        <div><h1>ข้อมูลทดสอบและตัวอย่างผลตรวจ</h1><p>ดูข้อความที่ใช้ทดสอบ ผลถูก/ผิด และตัวอย่างอย่างละ 10 ข้อความ</p></div>
+      </div>
+
+      <div class="controls">
+        <select class="input" id="src" aria-label="ชุดข้อมูลที่ใช้ดู">
+          <option value="ext">ชุดทดสอบนอกชุดข้อมูล (โมเดลไม่เคยเห็น)</option>
+          <option value="cv">ชุดข้อมูลหลัก (คำทายแบบ cross-validation)</option>
+        </select>
+        <select class="input" id="sys" aria-label="ระบบที่ใช้ตัดสิน">
+          <option value="ml">โมเดล ML (Python)</option>
+          <option value="rules">ระบบกฎ (Rule-based)</option>
+        </select>
+        <button class="btn btn-sm" id="dl" type="button">ดาวน์โหลด CSV ตัวอย่าง</button>
+      </div>
+      <p class="hint" id="srcNote" style="margin:-.4rem 0 1rem"></p>
+
+      <div class="stats" id="stats"></div>
+
+      <div class="two">
+        <section class="card" aria-labelledby="hG"><h2 id="hG">ตัวอย่างที่ตรวจ<b style="color:var(--safe)">ถูก</b> 10 ข้อความ</h2><ul class="ex" id="good"></ul><p class="hint" id="goodNote"></p></section>
+        <section class="card" aria-labelledby="hB"><h2 id="hB">ตัวอย่างที่ตรวจ<b style="color:var(--danger)">ผิด</b> 10 ข้อความ</h2><ul class="ex bad" id="bad"></ul><p class="hint" id="badNote"></p></section>
+      </div>
+
+      <div class="two">
+        <section class="card" aria-labelledby="hC"><h2 id="hC">Confusion matrix</h2><div class="cm" id="cm"></div></section>
+        <section class="card" aria-labelledby="hF"><h2 id="hF">ตัวกรองข้อมูลทั้งหมด</h2>
+          <div class="controls" style="grid-template-columns:1fr 1fr;margin:0"><select class="input" id="fRes"><option value="">ทุกข้อความ</option><option value="ok">ตรวจถูก</option><option value="bad">ตรวจผิด</option></select>
+          <select class="input" id="fLab"><option value="">ทุกประเภท</option><option value="1">เฉลย: มิจฉาชีพ</option><option value="0">เฉลย: ปกติ</option></select></div>
+          <p class="hint" id="fCount"></p>
+        </section>
+      </div>
+
+      <section class="card section-gap" aria-labelledby="hT">
+        <h2 id="hT">ข้อความทดสอบทั้งหมด</h2>
+        <div class="tw"><table class="data"><thead><tr><th>#</th><th>ข้อความ</th><th>เฉลย</th><th>ระบบทาย</th><th>คะแนน</th><th>ผล</th></tr></thead><tbody id="rows"></tbody></table></div>
+        <p class="hint" id="more"></p>
+      </section>
+    </div>
+  </main>
+
+  <script src="js/shared.js"></script>
+  <script src="js/engine.js"></script>
+  <script>
+    SG.mount('examples');
+    const $ = id => document.getElementById(id), esc = SG.escapeHtml;
+    const LAB = v => v ? '<span class="pillx s">มิจฉาชีพ</span>' : '<span class="pillx h">ปกติ</span>';
+    const pct = v => (v * 100).toFixed(1) + '%';
+    let DATA = {}, ROWS = [], CUR = [];
+
+    function parseCSV(t) {
+      t = t.replace(/^﻿/, ''); const rows = []; let row = [], f = '', q = false;
+      for (let i = 0; i < t.length; i++) { const c = t[i];
+        if (q) { if (c === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+        else if (c === '"') q = true; else if (c === ',') { row.push(f); f = ''; }
+        else if (c === '\n' || c === '\r') { if (c === '\r' && t[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; } else f += c; }
+      if (f || row.length) { row.push(f); rows.push(row); } return rows.filter(r => r.length > 1);
+    }
+
+    async function load() {
+      try { const j = await (await fetch('model/external_predictions.json')).json(); DATA.ext = j.items.map(i => ({ text: i.text, label: i.label, ml: i.scam_probability })); } catch (e) { DATA.ext = []; }
+      try { const r = parseCSV(await (await fetch('model/predictions_cv.csv')).text()).slice(1); DATA.cv = r.map(x => ({ text: x[0], label: +x[1], ml: +x[3] })); } catch (e) { DATA.cv = []; }
+      // ระบบกฎคำนวณในเบราว์เซอร์ (engine.js) ใช้ข้อความเดียวกัน
+      for (const k of ['ext', 'cv']) DATA[k].forEach(d => { d.rules = SG.analyze(d.text).percent / 100; });
+      draw();
+    }
+
+    function metrics(rows) {
+      let tp = 0, tn = 0, fp = 0, fn = 0;
+      rows.forEach(r => { if (r.label && r.pred) tp++; else if (!r.label && !r.pred) tn++; else if (!r.label && r.pred) fp++; else fn++; });
+      const n = rows.length, acc = n ? (tp + tn) / n : 0, p = tp + fp ? tp / (tp + fp) : 0, rc = tp + fn ? tp / (tp + fn) : 0;
+      return { n, tp, tn, fp, fn, acc, p, rc, f1: p + rc ? 2 * p * rc / (p + rc) : 0 };
+    }
+    const pick = (arr, k) => { if (arr.length <= k) return arr; const out = []; for (let i = 0; i < k; i++) out.push(arr[Math.floor(i * arr.length / k)]); return out; };
+
+    function li(r, good) {
+      const score = Math.round(r.score * 100);
+      return `<li><div class="t">${esc(r.text)}</div><div class="m"><span>เฉลย: <b>${r.label ? 'มิจฉาชีพ' : 'ปกติ'}</b></span><span>ระบบทาย: <b>${r.pred ? 'ไม่น่าเชื่อถือ' : 'น่าเชื่อถือ'}</b></span><span>คะแนนความเสี่ยง: <b>${score}</b></span></div></li>`;
+    }
+
+    function draw() {
+      const src = $('src').value, sys = $('sys').value, list = DATA[src] || [];
+      $('srcNote').textContent = src === 'ext'
+        ? `ข้อความ ${list.length} ข้อความที่ไม่ได้ใช้เทรน (ไฟล์ external_test_100.csv หรือ external_check.csv) ${list.length < 100 ? '— ตอนนี้ยังไม่ครบ 100 ข้อความ' : ''}`
+        : `ข้อความ ${list.length} ข้อความที่ไม่ซ้ำกัน แต่ละข้อความถูกทายโดยโมเดลที่ไม่เคยเห็นข้อความนั้น (out-of-fold, 4-fold)`;
+      ROWS = list.map((d, i) => { const s = sys === 'ml' ? d.ml : d.rules; const pred = s >= .5 ? 1 : 0; return { n: i + 1, text: d.text, label: d.label, score: s, pred, ok: pred === d.label }; });
+
+      const m = metrics(ROWS);
+      $('stats').innerHTML = [['จำนวนข้อความ', m.n], ['Accuracy', pct(m.acc)], ['Precision', pct(m.p)], ['Recall', pct(m.rc)], ['F1-score', pct(m.f1)]].map(x => `<div class="stat"><small>${x[0]}</small><b>${x[1]}</b></div>`).join('');
+      $('cm').innerHTML = `<div class="h"></div><div class="h">ทายว่าปกติ</div><div class="h">ทายว่ามิจฉาชีพ</div>
+        <div class="h">จริง: ปกติ</div><div class="ok"><b>${m.tn}</b>ถูก</div><div class="bad"><b>${m.fp}</b>เตือนผิด</div>
+        <div class="h">จริง: มิจฉาชีพ</div><div class="bad"><b>${m.fn}</b>พลาด</div><div class="ok"><b>${m.tp}</b>ถูก</div>`;
+
+      // ตัวอย่างถูก: เลือกกระจายเท่าๆ กัน (ไม่เลือกเฉพาะข้อที่ง่าย) แบ่งมิจฉาชีพ/ปกติอย่างละครึ่ง  ตัวอย่างผิด: เรียงจากที่ทายมั่นใจผิดมากที่สุด
+      const good = ROWS.filter(r => r.ok), bad = ROWS.filter(r => !r.ok);
+      const g = [...pick(good.filter(r => r.label), 5), ...pick(good.filter(r => !r.label), 5)];
+      const gFill = g.length < 10 ? [...g, ...pick(good.filter(r => !g.includes(r)), 10 - g.length)] : g;
+      const b = bad.slice().sort((x, y) => Math.abs(y.score - .5) - Math.abs(x.score - .5)).slice(0, 10);
+      CUR = { good: gFill, bad: b };
+      $('good').innerHTML = gFill.map(r => li(r, true)).join('') || '<li style="border-left-color:var(--line)">ไม่มีข้อมูล</li>';
+      $('bad').innerHTML = b.map(r => li(r, false)).join('') || '<li style="border-left-color:var(--line)">ไม่มีข้อความที่ตรวจผิด</li>';
+      $('goodNote').textContent = `เลือกกระจายเท่าๆ กันจากข้อความที่ตรวจถูกทั้งหมด ${good.length} ข้อความ (มิจฉาชีพ 5 + ปกติ 5) ไม่ได้เลือกเฉพาะข้อที่ง่าย`;
+      $('badNote').textContent = bad.length < 10 ? `มีข้อความที่ตรวจผิดทั้งหมดเพียง ${bad.length} ข้อความ (ไม่ถึง 10) ถ้าต้องการให้ครบ 10 ให้เพิ่มชุดทดสอบนอกชุดข้อมูล` : `เรียงจากข้อที่ระบบมั่นใจผิดมากที่สุด จากทั้งหมด ${bad.length} ข้อความที่ผิด`;
+      drawRows();
+    }
+
+    function drawRows() {
+      const fr = $('fRes').value, fl = $('fLab').value;
+      const rows = ROWS.filter(r => (!fr || (fr === 'ok' ? r.ok : !r.ok)) && (!fl || String(r.label) === fl));
+      $('fCount').textContent = `แสดง ${Math.min(rows.length, 200)} จาก ${rows.length} ข้อความ`;
+      $('rows').innerHTML = rows.slice(0, 200).map(r => `<tr class="${r.ok ? '' : 'wrong'}"><td>${r.n}</td><td class="msg">${esc(r.text)}</td><td>${LAB(r.label)}</td><td>${LAB(r.pred)}</td><td>${Math.round(r.score * 100)}</td><td>${r.ok ? '✓ ถูก' : '✗ ผิด'}</td></tr>`).join('');
+      $('more').textContent = rows.length > 200 ? 'แสดงเพียง 200 แถวแรก ใช้ตัวกรองเพื่อดูส่วนที่เหลือ' : '';
+    }
+
+    $('dl').onclick = () => {
+      const q = s => '"' + String(s).replace(/"/g, '""').replace(/\r?\n/g, ' ') + '"';
+      const lines = ['กลุ่ม,ข้อความ,เฉลย,ระบบทาย,คะแนน'];
+      CUR.good.forEach(r => lines.push(['ถูก', q(r.text), r.label ? 'มิจฉาชีพ' : 'ปกติ', r.pred ? 'มิจฉาชีพ' : 'ปกติ', Math.round(r.score * 100)].join(',')));
+      CUR.bad.forEach(r => lines.push(['ผิด', q(r.text), r.label ? 'มิจฉาชีพ' : 'ปกติ', r.pred ? 'มิจฉาชีพ' : 'ปกติ', Math.round(r.score * 100)].join(',')));
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' }));
+      a.download = `examples_${$('src').value}_${$('sys').value}.csv`; a.click();
+    };
+    ['src', 'sys'].forEach(id => $(id).addEventListener('change', draw));
+    ['fRes', 'fLab'].forEach(id => $(id).addEventListener('change', drawRows));
+    load();
+  </script>
+</body>
+</html>
