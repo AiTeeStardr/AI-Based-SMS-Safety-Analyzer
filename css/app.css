@@ -86,7 +86,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .footer-links { display: flex; flex-wrap: wrap; gap: .4rem 1.25rem; }
 .footer-links a { text-decoration: none; }
 .footer-links a:hover { color: var(--brand); }
-@media (min-width: 900px) { .site-footer .wrap { grid-template-columns: auto 1fr auto; align-items: center; gap: 2rem; } .footer-links { justify-content: center; } }
+@media (min-width: 900px) { .site-footer .wrap { grid-template-columns: auto 1fr; align-items: center; gap: 1rem 2rem; } .footer-links { justify-content: flex-end; } .site-footer .wrap > p { grid-column: 1 / -1; } }
 
 /* ---------- Home ---------- */
 .hero { padding-block: 2.25rem 1.5rem; display: grid; gap: 1.5rem; align-items: center; }
