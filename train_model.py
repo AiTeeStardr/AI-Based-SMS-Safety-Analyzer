@@ -156,7 +156,9 @@ def main():
     }
 
     import evaluate_external
-    metrics["external"] = evaluate_external.run(deployed, OUT_DIR)
+    # ฝึกทุกอัลกอริทึมด้วยข้อมูลที่ไม่ซ้ำทั้งหมด แล้วทดสอบกับชุดนอกข้อมูล (ผลนี้ไม่ใช้เลือกโมเดล)
+    all_fitted = {n: make_pipeline(new_vectorizer(), c).fit(texts, y) for n, c in candidates().items()}
+    metrics["external"] = evaluate_external.run(deployed, OUT_DIR, all_models=all_fitted)
 
     with open(os.path.join(OUT_DIR, "metrics.json"), "w", encoding="utf-8") as f:
         json.dump(metrics, f, ensure_ascii=False, indent=2)

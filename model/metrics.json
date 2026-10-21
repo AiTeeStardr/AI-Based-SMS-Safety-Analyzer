@@ -1,5 +1,5 @@
 {
-  "trained_at": "2026-10-21T20:23:15",
+  "trained_at": "2026-10-21T23:15:05",
   "dataset": {
     "file": "thai_scam_sms_dataset.csv",
     "n_raw": 700,
@@ -168,6 +168,80 @@
         0,
         50
       ]
+    ],
+    "models": [
+      {
+        "name": "Multinomial Naive Bayes",
+        "accuracy": 0.68,
+        "precision": 0.6097560975609756,
+        "recall": 1.0,
+        "f1": 0.7575757575757576,
+        "roc_auc": 0.8996,
+        "confusion": [
+          [
+            18,
+            32
+          ],
+          [
+            0,
+            50
+          ]
+        ]
+      },
+      {
+        "name": "Logistic Regression",
+        "accuracy": 0.54,
+        "precision": 0.5208333333333334,
+        "recall": 1.0,
+        "f1": 0.684931506849315,
+        "roc_auc": 0.9392,
+        "confusion": [
+          [
+            4,
+            46
+          ],
+          [
+            0,
+            50
+          ]
+        ]
+      },
+      {
+        "name": "Support Vector Machine (LinearSVC)",
+        "accuracy": 0.73,
+        "precision": 0.6575342465753424,
+        "recall": 0.96,
+        "f1": 0.7804878048780488,
+        "roc_auc": 0.9356,
+        "confusion": [
+          [
+            25,
+            25
+          ],
+          [
+            2,
+            48
+          ]
+        ]
+      },
+      {
+        "name": "Random Forest Classifier",
+        "accuracy": 0.54,
+        "precision": 0.5208333333333334,
+        "recall": 1.0,
+        "f1": 0.684931506849315,
+        "roc_auc": 0.9614,
+        "confusion": [
+          [
+            4,
+            46
+          ],
+          [
+            0,
+            50
+          ]
+        ]
+      }
     ]
   }
 }

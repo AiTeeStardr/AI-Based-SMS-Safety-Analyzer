@@ -50,6 +50,8 @@
       <section class="card section-gap" aria-labelledby="hE">
         <h2 id="hE"><svg class="ic" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>ทดสอบกับข้อความนอกชุดข้อมูล</h2>
         <p id="extSummary" style="font-size:.92rem"></p>
+        <div class="scroll-x" style="margin-top:.8rem"><table class="models" id="extTbl"><thead></thead><tbody></tbody></table></div>
+        <p class="hint" id="extNote"></p>
         <ul class="ext" id="extList"></ul>
       </section>
 
@@ -93,8 +95,13 @@
 
       const ex = m.external;
       if (ex && ex.n) {
-        $('extSummary').innerHTML = `ข้อความ ${ex.n} ข้อความที่ไม่ได้ใช้เทรน (ไฟล์ <code>${esc(ex.file)}</code>) โมเดลทายถูก <b>${ex.n_correct}/${ex.n}</b> · Accuracy ${pct(ex.accuracy)} · Precision ${pct(ex.precision)} · Recall ${pct(ex.recall)} · F1 ${pct(ex.f1)} <br><a href="examples.html" style="color:var(--blue)">ดูข้อความทดสอบทั้งหมด พร้อมตัวอย่างตรวจถูก/ผิด อย่างละ 10 ข้อความ</a>`;
+        $('extSummary').innerHTML = `ข้อความ ${ex.n} ข้อความที่ไม่ได้ใช้เทรน (ไฟล์ <code>${esc(ex.file)}</code>) โมเดลที่ใช้งานจริงทายถูก <b>${ex.n_correct}/${ex.n}</b> · Accuracy ${pct(ex.accuracy)} · Precision ${pct(ex.precision)} · Recall ${pct(ex.recall)} · F1 ${pct(ex.f1)} <br><a href="examples.html" style="color:var(--blue)">ดูข้อความทดสอบทั้งหมด พร้อมตัวอย่างตรวจถูก/ผิด อย่างละ 10 ข้อความ</a>`;
         $('extList').innerHTML = '';
+        if (ex.models) {
+          $('extTbl').querySelector('thead').innerHTML = '<tr><th>โมเดล (ฝึกด้วยข้อความไม่ซ้ำทั้ง ' + d.n_unique + ' ข้อความ)</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>ROC-AUC</th><th>เตือนผิด (FP)</th></tr>';
+          $('extTbl').querySelector('tbody').innerHTML = ex.models.map(x => `<tr><td>${esc(x.name)}${x.name === m.deployed ? ' <span class="badge ok">ใช้งานจริง</span>' : ''}</td><td>${pct(x.accuracy)}</td><td>${pct(x.precision)}</td><td>${pct(x.recall)}</td><td>${pct(x.f1)}</td><td>${x.roc_auc.toFixed(3)}</td><td>${x.confusion[0][1]}</td></tr>`).join('');
+          $('extNote').textContent = 'ทุกโมเดลจับมิจฉาชีพได้เกือบครบ แต่เตือนผิดกับข้อความปกติจริงมาก (ค่า AUC ยังสูง แปลว่าจัดอันดับได้แต่เกณฑ์ 0.5 ที่ได้จากชุดฝึกไม่เหมาะกับข้อความชุดใหม่) ผลชุดนี้ไม่ได้ใช้เลือกโมเดลหรือปรับเกณฑ์';
+        }
       } else $('extSummary').textContent = 'ไม่มีข้อมูลการทดสอบนอกชุดข้อมูล';
 
       const dup = d.n_duplicates;

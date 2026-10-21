@@ -15,7 +15,7 @@ import json
 import os
 
 import joblib
-from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score
+from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score, roc_auc_score
 
 CANDIDATES = ["external_test_100.csv", "external_check.csv"]
 
@@ -31,7 +31,16 @@ def load_external():
     return None, []
 
 
-def run(model, out_dir="model"):
+def metrics_for(model, texts, y):
+    prob = model.predict_proba(texts)[:, 1]
+    pred = [int(p >= 0.5) for p in prob]
+    tn, fp, fn, tp = confusion_matrix(y, pred, labels=[0, 1]).ravel()
+    return {"accuracy": float(accuracy_score(y, pred)), "precision": float(precision_score(y, pred, zero_division=0)),
+            "recall": float(recall_score(y, pred, zero_division=0)), "f1": float(f1_score(y, pred, zero_division=0)),
+            "roc_auc": float(roc_auc_score(y, prob)), "confusion": [[int(tn), int(fp)], [int(fn), int(tp)]]}
+
+
+def run(model, out_dir="model", all_models=None):
     path, rows = load_external()
     if not rows:
         print("ไม่พบไฟล์ข้อความนอกชุดข้อมูล")
@@ -52,6 +61,8 @@ def run(model, out_dir="model"):
         "f1": float(f1_score(y, pred, zero_division=0)),
         "confusion": [[int(tn), int(fp)], [int(fn), int(tp)]],
     }
+    if all_models:  # ทุกอัลกอริทึม ฝึกด้วยข้อมูลที่ไม่ซ้ำทั้งหมด แล้วทดสอบกับชุดนอกข้อมูลชุดเดียวกัน
+        summary["models"] = [dict(name=n, **metrics_for(m, texts, y)) for n, m in all_models.items()]
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, "external_predictions.json"), "w", encoding="utf-8") as f:
         json.dump({"summary": summary, "items": items}, f, ensure_ascii=False)
