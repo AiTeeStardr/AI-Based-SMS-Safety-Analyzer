@@ -30,6 +30,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import RepeatedStratifiedKFold, StratifiedKFold, cross_val_predict, cross_validate
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import make_pipeline
 from sklearn.svm import LinearSVC
 
@@ -69,6 +70,7 @@ def candidates():
         "Logistic Regression": LogisticRegression(C=10, max_iter=2000, random_state=SEED),
         "Support Vector Machine (LinearSVC)": CalibratedClassifierCV(LinearSVC(C=1.0, random_state=SEED), cv=3),
         "Random Forest Classifier": RandomForestClassifier(n_estimators=200, random_state=SEED, n_jobs=-1),
+        "Neural Network (MLP)": MLPClassifier(hidden_layer_sizes=(64,), alpha=1e-3, max_iter=500, random_state=SEED),
     }
 
 

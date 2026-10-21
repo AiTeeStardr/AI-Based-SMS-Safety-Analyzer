@@ -1,5 +1,5 @@
 {
-  "trained_at": "2026-10-21T23:15:05",
+  "trained_at": "2026-10-22T00:18:58",
   "dataset": {
     "file": "thai_scam_sms_dataset.csv",
     "n_raw": 700,
@@ -107,6 +107,29 @@
         [
           154,
           9
+        ],
+        [
+          0,
+          236
+        ]
+      ]
+    },
+    {
+      "name": "Neural Network (MLP)",
+      "accuracy": 0.9894848484848484,
+      "accuracy_std": 0.0092052240261991,
+      "precision": 0.982740697371845,
+      "precision_std": 0.014754773244978597,
+      "recall": 1.0,
+      "recall_std": 0.0,
+      "f1": 0.9912388069982091,
+      "f1_std": 0.007582626266420715,
+      "roc_auc": 1.0,
+      "roc_auc_std": 0.0,
+      "confusion": [
+        [
+          160,
+          3
         ],
         [
           0,
@@ -239,6 +262,24 @@
           [
             0,
             50
+          ]
+        ]
+      },
+      {
+        "name": "Neural Network (MLP)",
+        "accuracy": 0.79,
+        "precision": 0.7101449275362319,
+        "recall": 0.98,
+        "f1": 0.8235294117647058,
+        "roc_auc": 0.9164000000000001,
+        "confusion": [
+          [
+            30,
+            20
+          ],
+          [
+            1,
+            49
           ]
         ]
       }
